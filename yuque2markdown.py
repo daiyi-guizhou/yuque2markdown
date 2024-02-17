@@ -16,7 +16,7 @@ import yaml
 TYPE_TITLE = "TITLE"
 TYPE_DOC = "DOC"
 META_JSON = "$meta.json"
-TMP_DIR = "/tmp"
+TMP_DIR = "./"
 
 DEFAULT_HEADING_STYLE = "ATX"
 
@@ -44,7 +44,7 @@ def sanitizer_file_name(name):
 
 def read_toc(random_tmp_dir):
     # open meta json
-    f = open(os.path.join(random_tmp_dir, META_JSON), "r")
+    f = open(os.path.join(random_tmp_dir, META_JSON), "r", encoding='utf8')
     meta_file_str = json.loads(f.read())
     meta_str = meta_file_str.get("meta", "")
     meta = json.loads(meta_str)
@@ -54,7 +54,7 @@ def read_toc(random_tmp_dir):
     return toc
 
 
-def extract_repos(repo_dir, output, toc, download_image):
+def extract_repos(repo_dir, output, toc, download_image=True):
     last_level = 0
     last_sanitized_title = ""
     path_prefixed = []
@@ -85,7 +85,7 @@ def extract_repos(repo_dir, output, toc, download_image):
             if not os.path.exists(output_dir_path):
                 os.makedirs(output_dir_path)
             raw_path = os.path.join(repo_dir, url + ".json")
-            raw_file = open(raw_path, "r")
+            raw_file = open(raw_path, "r", encoding='utf-8')
             doc_str = json.loads(raw_file.read())
             html = doc_str["doc"]["body"] or doc_str["doc"]["body_asl"]
 
@@ -95,7 +95,7 @@ def extract_repos(repo_dir, output, toc, download_image):
                 )
 
             output_path = os.path.join(output_dir_path, sanitized_title + ".md")
-            f = open(output_path, "w")
+            f = open(output_path, "w", encoding='utf-8')
             f.write(pretty_md(md(html, heading_style=DEFAULT_HEADING_STYLE)))
 
         last_sanitized_title = sanitized_title
@@ -148,7 +148,8 @@ def main():
     parser.add_argument("lakebook", help="Lakebook file")
     parser.add_argument("output", help="Output directory")
     parser.add_argument(
-        "--download-image", help="Download images to local", action="store_true"
+        "--download-image", help="Download images to local", action="store_true", 
+        default=True 
     )
     args = parser.parse_args()
     if not os.path.exists(args.lakebook):
