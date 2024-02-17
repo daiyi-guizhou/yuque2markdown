@@ -94,7 +94,8 @@ def extract_repos(repo_dir, output, toc, download_image=True):
                     output_dir_path, sanitized_title, html
                 )
 
-            output_path = os.path.join(output_dir_path, sanitized_title + ".md")
+            output_path = os.path.join(
+                output_dir_path, sanitized_title + ".md")
             f = open(output_path, "w", encoding='utf-8')
             f.write(pretty_md(md(html, heading_style=DEFAULT_HEADING_STYLE)))
 
@@ -114,9 +115,11 @@ def download_images_and_patch_html(output_dir_path, sanitized_title, html):
             resp = get(image["src"])
             file_name = sanitized_title + "_%03d%s" % (
                 no,
-                content_type_to_extension.get(resp.headers["Content-Type"], ""),
+                content_type_to_extension.get(
+                    resp.headers["Content-Type"], ""),
             )
-            attachments_file_path = os.path.join(attachments_dir_path, file_name)
+            attachments_file_path = os.path.join(
+                attachments_dir_path, file_name)
             with open(attachments_file_path, "wb") as f:
                 f.write(resp.content)
             no = no + 1
@@ -144,19 +147,28 @@ def pretty_md(text: str) -> str:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Convert Yuque doc to markdown")
+    parser = argparse.ArgumentParser(
+        description="Convert Yuque doc to markdown")
     parser.add_argument("lakebook", help="Lakebook file")
-    parser.add_argument("output", help="Output directory")
+    parser.add_argument("-o", "--output", dest="output", help="Output directory",
+                        default="output", type=str)
     parser.add_argument(
-        "--download-image", help="Download images to local", action="store_true", 
-        default=True 
+        "--download-image", help="Download images to local", action="store_true",
+        default=True
     )
     args = parser.parse_args()
     if not os.path.exists(args.lakebook):
         print("Lakebook file not found: " + args.lakebook)
         sys.exit(1)
-    if not os.path.exists(args.output):
-        os.mkdir(args.output)
+    old_file_name = args.lakebook.split(
+        ".lakebook")[0].split("/")[-1].split("\\")[-1]
+    if args.output == "output":
+        output_file = old_file_name
+    else:
+        output_file = old_file_name
+    assert output_file, "not output_file"
+    if not os.path.exists(output_file):
+        os.mkdir(output_file)
 
     # extract lakebook file
     random_tmp_dir = os.path.join(TMP_DIR, "lakebook_" + str(os.getpid()))
@@ -175,7 +187,7 @@ def main():
     # print len of toc
     print("Total " + str(len(toc)) + " files")
 
-    extract_repos(repo_dir, args.output, toc, args.download_image)
+    extract_repos(repo_dir, output_file, toc, args.download_image)
 
     # remove tmp dir
     shutil.rmtree(random_tmp_dir)
